@@ -1,7 +1,7 @@
 import sys
 # Adjust this import based on where you run main.py from.
 # If running from root 'Treap vs BST Comparison':
-from src.models.models import Node, Post
+from src.Models.models import Node, Post
 
 
 class Treap:
