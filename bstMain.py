@@ -5,10 +5,15 @@ import sys
 import importlib.util
 
 # ==========================================
+# CRITICAL FIX: INCREASE RECURSION LIMIT
+# ==========================================
+# Since the BST becomes a "stick", the depth equals the number of nodes.
+# We set it to 100,000 to safely handle your 50,000 limit.
+sys.setrecursionlimit(100000) 
+
+# ==========================================
 # FIX FOR FOLDER WITH SPACES ("Binary Search Tree")
 # ==========================================
-# We cannot use 'from src.Binary Search Tree import BST'
-# So we load the file path manually.
 try:
     # Build the path: src -> Binary Search Tree -> bst.py
     bst_path = os.path.join("src", "Binary Search Tree", "bst.py")
@@ -20,16 +25,14 @@ try:
     BST = bst_module.BST
 except FileNotFoundError:
     print("CRITICAL ERROR: Could not find 'src/Binary Search Tree/bst.py'")
-    print("Please check if the folder name matches exactly.")
     sys.exit(1)
 
-# Import Utils (This one usually doesn't have spaces)
+# Import Utils
 from src.Utility.utils import stream_reddit_dataset, get_tree_height, get_total_balance_factor
 
 # --- CONFIGURATION ---
-# We force Kaggle mode since you are running this command on Kaggle
 DATASET_PATH = "/kaggle/input/the-pushshift-reddit-dataset-submissions/RC_2019-04.zst"
-LIMIT = 50000 # Processing a large chunk as requested
+LIMIT = 50000 
 
 def main():
     print(f"=== BST IMPLEMENTATION (Processing {LIMIT} nodes) ===")
@@ -57,10 +60,7 @@ def main():
     print(f"Avg Insertion Time: {avg_insertion:.8f} sec")
     
     # 2. STRUCTURAL METRICS
-    print("Calculating Height (This may be slow for skewed BST)...")
-    # Increase recursion limit because the BST will be a giant stick
-    sys.setrecursionlimit(max(2000, LIMIT + 500))
-    
+    print("Calculating Height (This will take a moment)...")
     height = get_tree_height(bst.root)
     print(f"Tree Height: {height}")
     
@@ -74,8 +74,10 @@ def main():
     values = [avg_insertion * 1000, height, avg_bf] 
     
     plt.figure(figsize=(10, 6))
+    # Use logarithmic scale if height is huge, otherwise bars might look weird
+    # But for comparison, linear is honest.
     bars = plt.bar(metrics, values, color=['darkred', 'red', 'salmon'])
-    plt.title(f"BST Metrics (N={count})")
+    plt.title(f"BST Metrics (N={count}) - The 'Stick' Effect")
     plt.ylabel('Value')
     
     for bar in bars:
