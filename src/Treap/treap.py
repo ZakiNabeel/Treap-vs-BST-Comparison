@@ -249,4 +249,10 @@ class Treap:
             t1, t2 = t2, t1  # Swap
 
         # Now Split t2 based on t1's key (Timestamp)
-        left_t2, right_t2 = self.split(t2, t1.
+        left_t2, right_t2 = self.split(t2, t1.post.timestamp)
+
+        # Recursively merge the pieces
+        t1.left = self._union_recursive(t1.left, left_t2)
+        t1.right = self._union_recursive(t1.right, right_t2)
+
+        return t1
