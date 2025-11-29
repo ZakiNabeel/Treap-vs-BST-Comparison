@@ -7,7 +7,7 @@ from src.Treap.treap import Treap
 from src.Utility.utils import stream_reddit_dataset, get_tree_height, get_total_balance_factor
 
 # --- CONFIGURATION ---
-LOCAL_MODE = True  # Set to False when on Kaggle
+LOCAL_MODE = False  # Set to False when on Kaggle
 
 if LOCAL_MODE:
     DATASET_PATH = "dummy_data.json"
