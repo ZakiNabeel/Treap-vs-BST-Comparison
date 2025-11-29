@@ -1,3 +1,4 @@
+%%writefile "Treap-vs-BST-Comparison/bstMain.py"
 import time
 import matplotlib.pyplot as plt
 import os
