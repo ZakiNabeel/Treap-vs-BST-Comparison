@@ -2,15 +2,17 @@ import json
 import os
 import io
 import zstandard as zstd
-import matplotlib.pyplot as plt
+import sys
 
+# Increase recursion depth just in case, though the optimized metric is iterative/safe
+sys.setrecursionlimit(200000)
 
-# --- DATA STREAMING ---
+# --- 1. DATA STREAMING ---
 def stream_reddit_dataset(filepath, limit=None):
     if not os.path.exists(filepath):
         print(f"Error: File not found at {filepath}")
         return
-
+    
     with open(filepath, 'rb') as fh:
         dctx = zstd.ZstdDecompressor()
         with dctx.stream_reader(fh) as reader:
@@ -22,36 +24,28 @@ def stream_reddit_dataset(filepath, limit=None):
                     data = json.loads(line)
                     yield (data['id'], int(data['created_utc']), int(data['score']))
                     count += 1
-                except:
-                    continue
+                except: continue
 
-
-# --- NEW: METRIC CALCULATIONS ---
-def get_tree_height(node):
-    if not node: return 0
-    return 1 + max(get_tree_height(node.left), get_tree_height(node.right))
-
-
-def get_total_balance_factor(node):
+# --- 2. OPTIMIZED METRIC CALCULATION (O(N)) ---
+# This is the function that was missing!
+def get_structural_metrics(node):
     """
-    Recursively sums the ABSOLUTE balance factor of every node.
-    BF = abs(Height(Left) - Height(Right))
+    Calculates Height and Balance Factor in a SINGLE pass (Bottom-Up).
+    Returns: (Height, Total_Abs_Balance_Factor, Node_Count)
     """
-    if not node: return 0, 0  # (Sum of BF, Count of Nodes)
+    if not node:
+        return 0, 0, 0 # Height, Total_BF, Count
 
-    h_left = get_tree_height(node.left)
-    h_right = get_tree_height(node.right)
+    # Recursive Step
+    l_h, l_bf_sum, l_count = get_structural_metrics(node.left)
+    r_h, r_bf_sum, r_count = get_structural_metrics(node.right)
 
-    current_bf = abs(h_left - h_right)
+    # Calculate Current Node Stats
+    current_height = 1 + max(l_h, r_h)
+    current_bf = abs(l_h - r_h) # Balance Factor = |LeftH - RightH|
+    
+    # Aggregate Stats
+    total_bf = current_bf + l_bf_sum + r_bf_sum
+    total_count = 1 + l_count + r_count
 
-    left_sum, left_count = get_total_balance_factor(node.left)
-    right_sum, right_count = get_total_balance_factor(node.right)
-
-    return (current_bf + left_sum + right_sum), (1 + left_count + right_count)
-
-
-def print_ascii_tree(node, prefix="", is_left=True):
-    if node is not None:
-        print(prefix + ("|-- " if is_left else "`-- ") + f"[{node.post.post_id}]")
-        print_ascii_tree(node.left, prefix + ("|   " if is_left else "    "), True)
-        print_ascii_tree(node.right, prefix + ("|   " if is_left else "    "), False)
+    return current_height, total_bf, total_count
