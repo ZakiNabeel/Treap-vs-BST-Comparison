@@ -1,4 +1,3 @@
-%%writefile src/Treap/treap.py
 import sys
 # Standard imports with fallback for different folder structures
 try:
