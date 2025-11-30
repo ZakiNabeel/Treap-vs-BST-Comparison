@@ -1,4 +1,3 @@
-%%writefile treapMain.py
 import time
 import matplotlib.pyplot as plt
 import os
